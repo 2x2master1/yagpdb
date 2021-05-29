@@ -1,0 +1,52 @@
+{{/*
+Custom Command to transfer a member's roles to another member
+
+
+Trigger type: Regex
+Trigger: `\A(-|<@!?204255221017214977>\s*)((m(ove)?|tr(ansfer)?)r(oles)?)(\s+|\z)`
+Errors as Custom Command Outputs: off
+
+Usage:
+-transferroles <@user/ID> <@user/ID>
+
+This command makes YAGPDB remove all roles from the second member and gives them all roles from the first member specified.
+It can not transfer:
+- Roles above or equal to the bot's highest role
+- Roles manages by integrations (Bot roles, Booster roles, Twitch roles etc.)
+
+Credits: 2x2Master1 <https://github.com/2x2master1>
+Feel free to DM me if you have any questions or problems!
+*/}}
+
+{{$args := parseArgs 2 "Please specify two members of the server." (carg "member" "Member to be transferred from") (carg "member" "Member to be transferred to")}}
+{{$m := sendMessageRetID nil (cembed "title" "<a:loading:839427216848584706> Transferring..." "color" 0xFFFF00)}}
+{{$u1 := (getMember (index .CmdArgs 0))}}
+{{$u2 := (getMember (index .CmdArgs 1))}}
+{{$rpos := 0}}
+{{$ypos := 0}}
+{{$stop := false}}
+{{$a := false}}
+{{$yag := getMember 204255221017214977}}
+{{range $u2.Roles}}
+	{{takeRoleID $u2.User .}}
+{{end}}
+{{$x := ""}}
+{{range .Guild.Roles}}
+	{{- if and (in $yag.Roles .ID) (not $stop)}}
+		{{$ypos = .Position}}
+		{{$stop = true}}
+	{{end}}
+{{end}}
+{{range $u1.Roles}}
+	{{$a = .}}
+	{{giveRoleID $u2.User .}}
+	{{range $.Guild.Roles}}
+		{{if eq .ID $a}}
+			{{$rpos = .Position}}
+		{{end}}
+	{{end}}
+	{{if gt $ypos $rpos}}
+		{{$x = print $x " <@&" . ">"}}
+	{{end}}
+{{end}}
+{{editMessage nil $m (cembed "title" "Role transfer successful!" "description" (print "<:arrow:839425883017838604> Transferred from: `" $u1.User.String "`\n<:arrow:839425883017838604> Transferred to: `" $u2.User.String "`\n<:arrow:839425883017838604> Transferred roles:\n" $x) "color" 0x00FF00)}}
