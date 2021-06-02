@@ -1,0 +1,29 @@
+{{/*
+	Basic softban command that notifies user that they were banned and immediately unbanned. It's there to easily delete a member's messages.
+	
+	WARNING: Make sure to restrict this command to the roles you want to use this command, otherwise EVERYONE can use it!
+	
+	Trigger type: Command
+	Trigger: softban
+	
+	Usage:
+	-softban <@/ID> <Days of messages by this user that should be deleted, 1-7> <Reason>
+	
+	Credits: 2x2Master1 <https://github.com/2x2master1>
+	Feel free to DM me if you have any questions or problems!
+*/}}
+
+{{/* Configuration area starts */}}
+{{$message := " | *Soft-Ban: You were banned and immediately unbanned to delete your messages. You may rejoin now.*"}}{{/* Message that gets sent after the reason, put "" if you don't want that*/}}
+{{/* Configuration area ends */}}
+
+{{$args := parseArgs 2 "Correct usage: `-softban <user: mention/ID> <days delete: number> (reason: text)`" (carg "member" "user") (carg "int" "days delete") (carg "string" "reason")}}
+{{if or (ge ($args.Get 1) 8) (le ($args.Get 1) 0)}}
+	{{sendMessage nil ":x: Number must be between 1 and 7!"}}
+{{else if ge (len .CmdArgs) 3}}
+	{{execAdmin "ban" ($args.Get 0).User.ID (joinStr " " (slice .CmdArgs 2) " | *Soft-Ban: You were banned and immediately unbanned to delete your messages. You may rejoin now.*") "-ddays " ($args.Get 1)}}
+	{{execAdmin "unban" ($args.Get 0).User.ID "Soft-banned"}}
+{{else}}
+	{{execAdmin "ban" ($args.Get 0).User.ID "(No reason specified) | *Soft-Ban: You were banned and immediately unbanned to delete your messages. You may rejoin now.*" "-ddays " ($args.Get 1)}}
+	{{execAdmin "unban" ($args.Get 0).User.ID "Soft-banned"}}
+{{end}}
