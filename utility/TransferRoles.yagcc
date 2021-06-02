@@ -1,23 +1,23 @@
 {{/*
-Custom Command to transfer a member's roles to another member
+	Custom Command to transfer a member's roles to another member
 
 
-Trigger type: Regex
-Trigger: `\A(-|<@!?204255221017214977>\s*)((m(ove)?|tr(ansfer)?)r(oles)?)(\s+|\z)`
-Errors as Custom Command Outputs: off
+	Trigger type: Regex
+	Trigger: `\A(-|<@!?204255221017214977>\s*)((m(ove)?|tr(ansfer)?)r(oles)?)(\s+|\z)`
+	Errors as Custom Command Outputs: off
 
-Usage:
--transferroles <@user/ID> <@user/ID>
+	Usage:
+	-transferroles <@user/ID> <@user/ID>
 
-This command makes YAGPDB remove all roles from the second member and gives them all roles from the first member specified.
-It can not transfer:
-- Roles above or equal to the bot's highest role
-- Roles manages by integrations (Bot roles, Booster roles, Twitch roles etc.)
+	This command makes YAGPDB remove all roles from the second member and gives them all roles from the first member specified.
+	It can not transfer:
+	- Roles above or equal to the bot's highest role
+	- Roles manages by integrations (Bot roles, Booster roles, Twitch roles etc.)
 
-NOTE: This may error if you are transferring more than 60 roles.
+	NOTE: This may error if you are transferring more than 60 roles.
 
-Credits: 2x2Master1 <https://github.com/2x2master1>
-Feel free to DM me if you have any questions or problems!
+	Credits: 2x2Master1 <https://github.com/2x2master1>
+	Feel free to DM me if you have any questions or problems!
 */}}
 
 {{$args := parseArgs 2 "Please specify two members of the server." (carg "member" "Member to be transferred from") (carg "member" "Member to be transferred to")}}
