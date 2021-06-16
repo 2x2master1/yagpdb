@@ -17,7 +17,7 @@
 	NOTE: This may error if you are transferring more than 60 roles.
 
 	Credits: 2x2Master1 <https://github.com/2x2master1>
-	Feel free to DM me if you have any questions or problems!
+	Feel free to ping me in YAGPDB support or DM me if you have any questions or problems!
 */}}
 
 {{$args := parseArgs 2 "Please specify two members of the server." (carg "member" "Member to be transferred from") (carg "member" "Member to be transferred to")}}
