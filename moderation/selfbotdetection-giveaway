@@ -1,6 +1,0 @@
-{{$logchannel := 835459162602471434}}
-{{$limit := 5}}
-{{$time := (currentTime.Sub .Message.Timestamp.Parse).Seconds}}
-{{if and (eq .Reaction.Emoji.Name "🎉") (inFold .Message.Content "giveaway") (or false (le $time (toFloat $limit))) (not .User.Bot)}}
-	{{sendMessage $logchannel (cembed "title" "Potential giveaway-selfbot detected!" "description" (print "User: " .User.Mention " (ID: " .User.ID ")\nMessage link: " (printf "[Jump to message](https://discord.com/channels/%d/%d/%d)" .Guild.ID .Channel.ID .Message.ID) "\nReacted after: " (div (round (mult $time 10)) 10) " Seconds") "color" 0xff0000)}}
-{{end}}

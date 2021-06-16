@@ -1,0 +1,21 @@
+{{/*
+	Custom command that detects selfbots that enter a giveaway quickly.
+	A message containing detected user, message link and time they took to react will be sent to a channel of your choice.
+
+	Trigger type: Reaction, added reactions only
+	Errors as Custom Command Outputs: off
+
+	Credits: 2x2Master1 <https://github.com/2x2master1>
+	Feel free to ping me in YAGPDB support or DM me if you have any questions or problems!
+	Thanks to Wolveric <https://github.com/Wolveric> for the idea!
+*/}}
+
+{{/* Configuration area starts */}}
+{{$logchannel := "835459162602471434"}}{{/* Channel you want reports to be sent to. A channel name can also be used as long as it only exists once in the server. */}}
+{{$limit := 5}}{{/* Time in seconds after which no reports are sent. */}}
+{{/* Configuration area ends */}}
+
+{{$time := (currentTime.Sub .Message.Timestamp.Parse).Seconds}}
+{{if and (eq .Reaction.Emoji.Name "🎉") (reFind `(?i)g\s+i\s+v\s+e\s+a\s+w\s+y` .Message.Content) (or false (le $time (toFloat $limit))) (not .User.Bot)}}
+	{{sendMessage $logchannel (cembed "title" "Potential giveaway-selfbot detected!" "description" (print "User: " .User.Mention " (ID: " .User.ID ")\nMessage link: " (print "[Jump to message](https://discord.com/channels/" .Guild.ID "/" .Channel.ID "/" .Message.ID) "\nReacted after: " (div (round (mult $time 10)) 10) " Seconds") "color" 0xff0000)}}
+{{end}}
