@@ -1,7 +1,10 @@
+{{/* Configuration area starts */}}
+{{$suggestionChannel := "835485138137251852"}}{{/* ID of the suggestion channel */}}
+
 {{if .CmdArgs}}
     {{addReactions "👍"}}
-    {{$m := sendMessageRetID 835485138137251852 (complexMessage "content" (print "**Suggestion by " .User.String "**") "embed" (cembed "description" (print .StrippedMsg "\n\nUpvotes: 0 (0%)\nDownvotes: 0 (0%)") "color" 0x00bbff))}}
-    {{addMessageReactions 835485138137251852 $m "🟢" "🔴"}}
+    {{$m := sendMessageRetID $suggestionChannel (complexMessage "content" (print "**Suggestion by " .User.String "**") "embed" (cembed "description" (print .StrippedMsg "\n\nUpvotes: 0 (0%)\nDownvotes: 0 (0%)") "color" 0x00bbff))}}
+    {{addMessageReactions $suggestionChannel $m "🟢" "🔴"}}
     {{deleteTrigger 5}}
 {{else}}
     You can't submit empty suggestions.
