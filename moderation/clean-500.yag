@@ -1,3 +1,21 @@
+{{/*
+	Clean command that supports bulk-deleting up to 500 messages (instead of 100)
+	IMPORTANT: Make sure to limit this command to certain allowed roles (set below the custom command editor). If you don't do this, everyone can use the command!
+
+	Trigger type: Command
+	Trigger: You can choose any trigger, but the prefix will be included already so that can be left out.
+	When using "clean", "clear" or "cl", make sure to disable the standard command in the command overrides. (Not recommended)
+	Errors as Custom Command Outputs: off
+
+	Usage:
+	-cl <number>
+	-cl <number> <@user/ID>
+
+	Credits: 2x2Master1 <https://github.com/2x2master1>
+	Feel free to ping me in YAGPDB support if you have any questions or problems!
+*/}}
+
+{{/* Do not edit below */}}
 {{$x := sendMessageRetID nil "<a:loading:839434733746520074> Deleting Messages..."}}
 {{if .CmdArgs}}
 	{{if (reFind `\A\d+\z` (index .CmdArgs 0))}}
