@@ -1,5 +1,6 @@
 {{/* Configuration area starts */}}
 {{$suggestionChannel := "835485138137251852"}}{{/* ID of the suggestion channel */}}
+{{/* Configuration area ends */}}
 
 {{if .CmdArgs}}
     {{addReactions "👍"}}
