@@ -1,3 +1,16 @@
+{{/*
+	Command that sends suggestions to a different channel in embed form so they can be voted on. Requires the reaction listener.
+	
+	Trigger type: Command
+	Trigger: suggest
+	
+	Usage:
+	-suggest <suggestion message>
+	
+	Credits: 2x2Master1 <https://github.com/2x2master1>
+	Feel free to DM me if you have any questions or problems!
+*/}}
+
 {{/* Configuration area starts */}}
 {{$suggestionChannel := "835485138137251852"}}{{/* ID of the suggestion channel */}}
 {{/* Configuration area ends */}}
