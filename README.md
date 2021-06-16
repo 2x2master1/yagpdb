@@ -22,5 +22,7 @@ This repository includes my public Custom Commands.
  
  <details>
   <summary>Other</summary>
+  
+  ## Other Custom Commands that did not fit into one of the categories above.
   * [Suggestion system](https://github.com/2x2master1/yaggy/blob/main/suggestions)
  </details>
