@@ -1,3 +1,6 @@
+
+
+
 {{if or (eq .Reaction.Emoji.Name "🟢") (eq .Reaction.Emoji.Name "🔴")}}
     {{$c1 := 0}}
     {{$message := .ReactionMessage}}
