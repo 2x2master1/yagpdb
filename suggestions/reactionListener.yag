@@ -9,39 +9,26 @@
 	Feel free to ping me in YAGPDB support or DM me if you have any questions or problems!
 */}}
 
-{{if or (eq .Reaction.Emoji.Name "🟢") (eq .Reaction.Emoji.Name "🔴")}}
-    {{$c1 := 0}}
-    {{$message := .ReactionMessage}}
-    {{$name1 := "🟢"}}
-    {{range $message.Reactions}}
-        {{if eq .Emoji.Name $name1}}
-            {{$c1 = sub .Count 1}}
-        {{end}}
-    {{end}}
-    {{$c2 := 0}}
-    {{$message := .ReactionMessage}}
-    {{$name2 := "🔴"}}
-    {{range $message.Reactions}}
-        {{if eq .Emoji.Name $name2}}
-            {{$c2 = sub .Count 1}}
-        {{end}}
-    {{end}}
-    {{$yes1 := false}}
-        {{if not (and (eq $c1 0) (eq $c2 0))}}
-        {{$yes1 = (toInt (mult (toFloat (div (toFloat $c1) (toFloat (add $c1 $c2)))) 100.0))}}
-        {{else}}
-        {{$yes1 = 0}}
-        {{end}}
-    {{$ed1 := ((index ((getMessage nil (.ReactionMessage.ID)).Embeds) 0).Description)}}
-    {{$yes := reReplace `Upvotes\: \d+ \(\d+\%\)` $ed (print "Upvotes: " (toString $c1) " (" $yes1 "%)")}}
-    {{$no1 := false}}
-        {{if not (and (eq $c1 0) (eq $c2 0))}}
-        {{$no1 = (toInt (mult (toFloat (div (toFloat $c2) (toFloat (add $c1 $c2)))) 100.0))}}
-        {{else}}
-        {{$no1 = 0}}
-        {{end}}
-    {{$ed2 := ((index ((getMessage nil (.ReactionMessage.ID)).Embeds) 0).Description)}}
-    {{$no := reReplace `Downvotes\: \d+ \(\d+\%\)` $ed (print "Downvotes: " (toString $c2) " (" $no1 "%)")}}
-    {{editMessage nil .ReactionMessage.ID (complexMessageEdit "content" .ReactionMessage.Content "embed" (cembed "title" ((index ((getMessage nil (.ReactionMessage.ID)).Embeds) 0).Title) "description" $no "color" 0x00bbff))}}
-    {{editMessage nil .ReactionMessage.ID (complexMessageEdit "content" .ReactionMessage.Content "embed" (cembed "title" ((index ((getMessage nil (.ReactionMessage.ID)).Embeds) 0).Title) "description" $yes "color" 0x00bbff))}}
+{{if and (or (eq .Reaction.Emoji.Name "🟢") (eq .Reaction.Emoji.Name "🔴")) .Message.Embeds}}
+	{{$c1 := 0}}
+	{{$c2 := 0}}
+	{{$message := .ReactionMessage}}
+	{{range $message.Reactions}}
+		{{if eq .Emoji.Name "🟢"}}
+			{{$c1 = sub .Count 1}}
+		{{else if eq .Emoji.Name "🔴"}}
+			{{$c2 = sub .Count 1}}
+		{{end}}
+	{{end}}
+	{{$up := false}}
+	{{$down := false}}
+	{{if not (and (eq $c1 0) (eq $c2 0))}}
+		{{$up = (toInt (mult (toFloat (div (toFloat $c1) (toFloat (add $c1 $c2)))) 100.0))}}
+		{{$down = (toInt (mult (toFloat (div (toFloat $c2) (toFloat (add $c1 $c2)))) 100.0))}}
+	{{else}}
+		{{$up = 0}}
+		{{$down = 0}}
+	{{end}}
+	{{$edNew := print (index (split ((index ((getMessage nil (.ReactionMessage.ID)).Embeds) 0).Description) "\n\n") 0) "\n\nUpvotes: " $c1 " (" $up "%)\nDownvotes: " $c2 " (" $down "%)"}}
+	{{editMessage nil .ReactionMessage.ID (complexMessageEdit "content" .ReactionMessage.Content "embed" (cembed "title" ((index ((getMessage nil (.ReactionMessage.ID)).Embeds) 0).Title) "description" $edNew "color" 0x00bbff))}}
 {{end}}
