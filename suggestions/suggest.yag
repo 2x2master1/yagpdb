@@ -17,7 +17,7 @@
 
 {{if .CmdArgs}}
     {{addReactions "👍"}}
-    {{$m := sendMessageRetID $suggestionChannel (complexMessage "content" (print "**Suggestion by " .User.String "**") "embed" (cembed "description" (print .StrippedMsg "\n\nUpvotes: 0 (0%)\nDownvotes: 0 (0%)") "color" 0x00bbff))}}
+    {{$m := sendMessageRetID $suggestionChannel (complexMessage "content" (print "**Suggestion by " .User.Mention "**") "embed" (cembed "description" (print (reReplace `(.*)\n{2,}(.*)` .StrippedMsg "$1\n$2") "\n\nUpvotes: 0 (0%)\nDownvotes: 0 (0%)") "color" 0x00bbff))}}
     {{addMessageReactions $suggestionChannel $m "🟢" "🔴"}}
     {{deleteTrigger 5}}
 {{else}}
