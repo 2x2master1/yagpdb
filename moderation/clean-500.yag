@@ -16,40 +16,50 @@
 */}}
 
 {{/* Do not edit below */}}
-{{$x := sendMessageRetID nil "<a:loading:839434733746520074> Deleting Messages..."}}
+{{$x := sendMessageRetID nil "<a:loading:839434733746520074> Deleting messages..."}}
 {{if .CmdArgs}}
+	{{$user := "0"}}
+	{{if gt (len .CmdArgs) 1}}
+		{{if (reFind `(\d{17,19})|<@(\!|)\d{17,19}>` (index .CmdArgs 1))}}
+			{{$user = (userArg (index .CmdArgs 1)).ID}}
+		{{end}}
+	{{end}}
 	{{if (reFind `\A\d+\z` (index .CmdArgs 0))}}
 		{{if and (lt (toInt (index .CmdArgs 0)) 501) (gt (toInt (index .CmdArgs 0)) 0)}}
 			{{$num := (toInt (index .CmdArgs 0))}}
 			{{deleteTrigger 0}}
 			{{if lt $num 101}}
-				{{(execAdmin "cl" $num "-minage 2s" "-nopin")}}
+				{{(execAdmin "cl" $num $user "-minage 3s" "-nopin")}}
 			{{else if lt $num 201}}
-				{{execAdmin "cl" 100 "-minage 2s" "-nopin"}}
-				{{(execAdmin "cl" (sub $num 100) "-minage 7s" "-nopin")}}
+				{{execAdmin "cl" 100 $user "-minage 3s" "-nopin"}}
+				{{(execAdmin "cl" (sub $num 100) $user "-minage 7s" "-nopin")}}
 			{{else if lt $num 301}}
-				{{execAdmin "cl" 100 "-minage 2s" "-nopin"}}
-				{{execAdmin "cl" 100 "-minage 7s" "-nopin"}}
-				{{(execAdmin "cl" (sub $num 200) "-minage 12s" "-nopin")}}
+				{{execAdmin "cl" 100 $user "-minage 3s" "-nopin"}}
+				{{execAdmin "cl" 100 $user "-minage 7s" "-nopin"}}
+				{{(execAdmin "cl" (sub $num 200) $user "-minage 12s" "-nopin")}}
 			{{else if lt $num 401}}
-				{{execAdmin "cl" 100 "-minage 2s" "-nopin"}}
-				{{execAdmin "cl" 100 "-minage 7s" "-nopin"}}
-				{{execAdmin "cl" 100 "-minage 12s" "-nopin"}}
+				{{execAdmin "cl" 100 $user "-minage 3s" "-nopin"}}
+				{{execAdmin "cl" 100 $user "-minage 7s" "-nopin"}}
+				{{execAdmin "cl" 100 $user "-minage 12s" "-nopin"}}
 				{{(execAdmin "cl" (sub $num 300) "-minage 17s" "-nopin")}}
 			{{else}}
-				{{execAdmin "cl" 100 "-minage 2s" "-nopin"}}
-				{{execAdmin "cl" 100 "-minage 7s" "-nopin"}}
-				{{execAdmin "cl" 100 "-minage 12s" "-nopin"}}
-				{{execAdmin "cl" 100 "-minage 17s" "-nopin"}}
-				{{(execAdmin "cl" (sub $num 400) "-minage 22s" "-nopin")}}
+				{{execAdmin "cl" 100 $user "-minage 3s" "-nopin"}}
+				{{execAdmin "cl" 100 $user "-minage 7s" "-nopin"}}
+				{{execAdmin "cl" 100 $user "-minage 12s" "-nopin"}}
+				{{execAdmin "cl" 100 $user "-minage 17s" "-nopin"}}
+				{{(execAdmin "cl" (sub $num 400) $user "-minage 25s" "-nopin")}}
 			{{end}}
-			{{editMessage nil $x (print "<:check:839433758046158888> **" $num "** Messages were deleted.")}}
+			{{if eq (toString $user) "0"}}
+			{{editMessage nil $x (print "<:check:839433758046158888> **" $num "** Messages have been deleted.")}}
+			{{else}}
+			{{editMessage nil $x (print "<:check:839433758046158888> **" $num "** Messages from " (userArg $user).String " have been deleted.")}}
+			{{end}}
 		{{else}}
-			{{editMessage nil $x "<:cross:839433835841585184> Number must be between 1 and 500."}}
+			{{editMessage nil $x "<:cross:839433835841585184> Number of messages must be between 1 and 500."}}
 		{{end}}
 	{{else}}
-		{{editMessage nil $x "<:cross:839433835841585184> Please provide the number of messages that should be deleted."}}
+		{{editMessage nil $x "<:cross:839433835841585184> Please provide the number of messages to be deleted."}}
 	{{end}}
 {{else}}
-	{{editMessage nil $x "<:cross:839433835841585184> Please provide the number of messages that should be deleted."}}
+	{{editMessage nil $x "<:cross:839433835841585184> Please provide the number of messages to be deleted."}}
 {{end}}
