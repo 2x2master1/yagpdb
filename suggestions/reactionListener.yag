@@ -1,6 +1,10 @@
 {{/*
 	This is the supportive reaction listener for the suggestion command by 2x2Master.
-    Please make sure to restrict this custom command to the suggestions channel so it doesn't trigger in other channels!
+    	Please make sure to restrict this custom command to the suggestions channel so it doesn't trigger in other channels!
+	Please make sure to disable "Add Reactions" permission for @everyone in the suggestions channel to avoid clutter.
+	
+	If you click the blue reaction (:radio_button:), two reactions ✅ and ❌ will show. These are there to deny/accept suggestions.
+	Only users with the permission specified as $modPerms can use other reactions than 🟢 and 🔴.
 
 	Trigger type: Reaction (added and removed reactions)
 	Errors as Custom Command Outputs: off
@@ -9,7 +13,21 @@
 	Feel free to ping me in YAGPDB support or DM me if you have any questions or problems!
 */}}
 
+{{/* Configuration area starts */}}
+{{$modPerms := "ManageMessages"}} {{/* Permission required to use other reactions than upvote and downvote. See a list of available options at https://raw.githubusercontent.com/2x2master1/yagpdb/main/suggestions/permissionOptions.txt */}}
+{{/* Configuration area ends, do not edit below */}}
+
+{{$mod := in (split (index (split (exec "viewperms") "\n") 2) ", ") $modPerms}}
 {{if and (or (eq .Reaction.Emoji.Name "🟢") (eq .Reaction.Emoji.Name "🔴")) .Message.Embeds}}
+	{{$opposite := false}}
+	{{if and (eq .Reaction.Emoji.Name "🟢") .ReactionAdded}}
+		{{$opposite = "🔴"}}
+	{{else if and (eq .Reaction.Emoji.Name "🔴") .ReactionAdded}}
+		{{$opposite = "🟢"}}
+	{{end}}
+	{{if .ReactionAdded}}
+		{{deleteMessageReaction nil .Message.ID .User.ID $opposite}}
+	{{end}}
 	{{$c1 := 0}}
 	{{$c2 := 0}}
 	{{$message := .ReactionMessage}}
@@ -29,6 +47,64 @@
 		{{$up = 0}}
 		{{$down = 0}}
 	{{end}}
-	{{$edNew := print (index (split ((index ((getMessage nil (.ReactionMessage.ID)).Embeds) 0).Description) "\n\n") 0) "\n\nUpvotes: " $c1 " (" $up "%)\nDownvotes: " $c2 " (" $down "%)"}}
-	{{editMessage nil .ReactionMessage.ID (complexMessageEdit "content" .ReactionMessage.Content "embed" (cembed "title" ((index ((getMessage nil (.ReactionMessage.ID)).Embeds) 0).Title) "description" $edNew "color" 0x00bbff))}}
+	{{with (index .Message.Embeds 0)}}
+		{{$edNew := print (index (split .Description "\n\n") 0) "\n\nUpvotes: " $c1 " (" $up "%)\nDownvotes: " $c2 " (" $down "%)"}}
+		{{if and .Image (not .Title)}}
+			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "description" $edNew "image" .Image "color" .Color))}}
+		{{else if not .Title}}
+			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "description" $edNew "color" .Color))}}
+		{{else if .Image}}
+			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" .Title "description" $edNew "image" .Image "color" .Color))}}
+		{{else}}
+			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" .Title "description" $edNew "color" .Color))}}
+		{{end}}
+	{{end}}
+{{else if eq .Reaction.Emoji.Name "🔘"}}
+	{{$open := false}}
+	{{range .Message.Reactions}}
+		{{if eq .Emoji.Name "✅"}}
+			{{$open = true}}
+		{{end}}
+	{{end}}
+	{{if and $mod .ReactionAdded (not .User.Bot) (not $open)}}
+		{{deleteMessageReaction nil .Message.ID .User.ID "🔘"}}
+		{{addReactions "✅" "❌"}}
+	{{else if not $open}}
+		{{deleteMessageReaction nil .Message.ID .User.ID "🔘"}}
+	{{else if and $mod $open}}
+		{{deleteAllMessageReactions nil .Message.ID "✅" "❌"}}
+		{{deleteMessageReaction nil .Message.ID .User.ID "🔘"}}
+	{{end}}
+{{else if and (or (eq .Reaction.Emoji.Name "✅") (eq .Reaction.Emoji.Name "❌")) .Message.Embeds .ReactionAdded $mod}}
+	{{with (index .Message.Embeds 0)}}
+		{{if .Title}}
+			{{deleteMessageReaction nil $.Message.ID $.User.ID $.Reaction.Emoji.Name}}
+		{{else if .Image}}
+			{{if eq $.Reaction.Emoji.Name "✅"}}
+				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been accepted by " $.User.String) "description" .Description "image" .Image "color" 0x00ff00))}}
+				{{deleteAllMessageReactions nil $.Message.ID "✅"}}
+				{{deleteAllMessageReactions nil $.Message.ID "❌"}}
+				{{deleteAllMessageReactions nil $.Message.ID "🔘"}}
+			{{else}}
+				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been denied by " $.User.String) "description" .Description "image" .Image "color" 0xff0000))}}
+				{{deleteAllMessageReactions nil $.Message.ID "✅"}}
+				{{deleteAllMessageReactions nil $.Message.ID "❌"}}
+				{{deleteAllMessageReactions nil $.Message.ID "🔘"}}
+			{{end}}
+		{{else}}
+			{{if eq $.Reaction.Emoji.Name "✅"}}
+				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been accepted by " $.User.String) "description" .Description "color" 0x00ff00))}}
+				{{deleteAllMessageReactions nil $.Message.ID "✅"}}
+				{{deleteAllMessageReactions nil $.Message.ID "❌"}}
+				{{deleteAllMessageReactions nil $.Message.ID "🔘"}}
+			{{else}}
+				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been denied by " $.User.String) "description" .Description "color" 0xff0000))}}
+				{{deleteAllMessageReactions nil $.Message.ID "✅"}}
+				{{deleteAllMessageReactions nil $.Message.ID "❌"}}
+				{{deleteAllMessageReactions nil $.Message.ID "🔘"}}
+			{{end}}
+		{{end}}
+	{{end}}
+{{else if not $mod}}
+	{{deleteMessageReaction nil .Message.ID .User.ID .Reaction.Emoji.Name}}
 {{end}}
