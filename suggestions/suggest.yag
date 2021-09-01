@@ -15,6 +15,10 @@
 
 {{/* Configuration area starts */}}
 {{$suggestionChannel := "835485138137251852"}}{{/* ID of the suggestion channel */}}
+{{$upvoteEmoji := "🟢"}}
+{{$downvoteEmoji := "🔴"}}
+{{$modmenuEmoji := "🔘"}}
+{{/* The variables above are the emojis used for the reactions. */}}
 {{/* Configuration area ends */}}
 
 {{if .CmdArgs}}
