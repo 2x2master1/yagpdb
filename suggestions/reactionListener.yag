@@ -15,15 +15,21 @@
 
 {{/* Configuration area starts */}}
 {{$modPerms := "ManageMessages"}} {{/* Permission required to use other reactions than upvote and downvote. See a list of available options at https://raw.githubusercontent.com/2x2master1/yagpdb/main/suggestions/permissionOptions.txt */}}
+{{$upvoteEmoji := "🟢"}}
+{{$downvoteEmoji := "🔴"}}
+{{$modmenuEmoji := "🔘"}}
+{{$acceptEmoji := "✅"}}
+{{$denyEmoji := "❌"}}
+{{/* The variables above are the emojis used for the reaction. Make sure the first three are the same as in the other file. */}}
 {{/* Configuration area ends, do not edit below */}}
 
 {{$mod := in (split (index (split (exec "viewperms") "\n") 2) ", ") $modPerms}}
-{{if and (or (eq .Reaction.Emoji.Name "🟢") (eq .Reaction.Emoji.Name "🔴")) .Message.Embeds}}
+{{if and (or (eq .Reaction.Emoji.Name $upvoteEmoji) (eq .Reaction.Emoji.Name $downvoteEmoji)) .Message.Embeds}}
 	{{$opposite := false}}
-	{{if and (eq .Reaction.Emoji.Name "🟢") .ReactionAdded}}
-		{{$opposite = "🔴"}}
-	{{else if and (eq .Reaction.Emoji.Name "🔴") .ReactionAdded}}
-		{{$opposite = "🟢"}}
+	{{if and (eq .Reaction.Emoji.Name $upvoteEmoji) .ReactionAdded}}
+		{{$opposite = $downvoteEmoji}}
+	{{else if and (eq .Reaction.Emoji.Name $downvoteEmoji) .ReactionAdded}}
+		{{$opposite = $upvoteEmoji}}
 	{{end}}
 	{{if .ReactionAdded}}
 		{{deleteMessageReaction nil .Message.ID .User.ID $opposite}}
@@ -32,17 +38,17 @@
 	{{$c2 := 0}}
 	{{$message := .ReactionMessage}}
 	{{range $message.Reactions}}
-		{{if eq .Emoji.Name "🟢"}}
+		{{if eq .Emoji.Name $upvoteEmoji}}
 			{{$c1 = sub .Count 1}}
-		{{else if eq .Emoji.Name "🔴"}}
+		{{else if eq .Emoji.Name $downvoteEmoji}}
 			{{$c2 = sub .Count 1}}
 		{{end}}
 	{{end}}
 	{{$up := false}}
 	{{$down := false}}
 	{{if not (and (eq $c1 0) (eq $c2 0))}}
-		{{$up = (toInt (mult (toFloat (div (toFloat $c1) (toFloat (add $c1 $c2)))) 100.0))}}
-		{{$down = (toInt (mult (toFloat (div (toFloat $c2) (toFloat (add $c1 $c2)))) 100.0))}}
+		{{$up = mult (div (toFloat $c1) (add $c1 $c2|toFloat)|toFloat) 100.0|toInt}}
+		{{$down = mult (div (toFloat $c2) (add $c1 $c2|toFloat)|toFloat) 100.0|toInt}}
 	{{else}}
 		{{$up = 0}}
 		{{$down = 0}}
@@ -59,51 +65,37 @@
 			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" .Title "description" $edNew "color" .Color))}}
 		{{end}}
 	{{end}}
-{{else if eq .Reaction.Emoji.Name "🔘"}}
+{{else if eq .Reaction.Emoji.Name $modmenuEmoji}}
 	{{$open := false}}
 	{{range .Message.Reactions}}
-		{{if eq .Emoji.Name "✅"}}
+		{{if eq .Emoji.Name $acceptEmoji}}
 			{{$open = true}}
 		{{end}}
 	{{end}}
 	{{if and $mod .ReactionAdded (not .User.Bot) (not $open)}}
-		{{deleteMessageReaction nil .Message.ID .User.ID "🔘"}}
-		{{addReactions "✅" "❌"}}
-	{{else if not $open}}
-		{{deleteMessageReaction nil .Message.ID .User.ID "🔘"}}
-	{{else if and $mod $open}}
-		{{deleteAllMessageReactions nil .Message.ID "✅" "❌"}}
-		{{deleteMessageReaction nil .Message.ID .User.ID "🔘"}}
+		{{addReactions $acceptEmoji $denyEmoji}}
+	{{else if and $mod $open .ReactionAdded}}
+		{{deleteAllMessageReactions nil .Message.ID $acceptEmoji $denyEmoji}}
 	{{end}}
-{{else if and (or (eq .Reaction.Emoji.Name "✅") (eq .Reaction.Emoji.Name "❌")) .Message.Embeds .ReactionAdded $mod}}
+	{{deleteMessageReaction nil .Message.ID .User.ID $modmenuEmoji}}
+{{else if and (or (eq .Reaction.Emoji.Name $acceptEmoji) (eq .Reaction.Emoji.Name $denyEmoji)) .Message.Embeds .ReactionAdded $mod}}
 	{{with (index .Message.Embeds 0)}}
 		{{if .Title}}
 			{{deleteMessageReaction nil $.Message.ID $.User.ID $.Reaction.Emoji.Name}}
 		{{else if .Image}}
-			{{if eq $.Reaction.Emoji.Name "✅"}}
+			{{if eq $.Reaction.Emoji.Name $acceptEmoji}}
 				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been accepted by " $.User.String) "description" .Description "image" .Image "color" 0x00ff00))}}
-				{{deleteAllMessageReactions nil $.Message.ID "✅"}}
-				{{deleteAllMessageReactions nil $.Message.ID "❌"}}
-				{{deleteAllMessageReactions nil $.Message.ID "🔘"}}
 			{{else}}
 				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been denied by " $.User.String) "description" .Description "image" .Image "color" 0xff0000))}}
-				{{deleteAllMessageReactions nil $.Message.ID "✅"}}
-				{{deleteAllMessageReactions nil $.Message.ID "❌"}}
-				{{deleteAllMessageReactions nil $.Message.ID "🔘"}}
 			{{end}}
 		{{else}}
-			{{if eq $.Reaction.Emoji.Name "✅"}}
+			{{if eq $.Reaction.Emoji.Name $acceptEmoji}}
 				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been accepted by " $.User.String) "description" .Description "color" 0x00ff00))}}
-				{{deleteAllMessageReactions nil $.Message.ID "✅"}}
-				{{deleteAllMessageReactions nil $.Message.ID "❌"}}
-				{{deleteAllMessageReactions nil $.Message.ID "🔘"}}
 			{{else}}
 				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been denied by " $.User.String) "description" .Description "color" 0xff0000))}}
-				{{deleteAllMessageReactions nil $.Message.ID "✅"}}
-				{{deleteAllMessageReactions nil $.Message.ID "❌"}}
-				{{deleteAllMessageReactions nil $.Message.ID "🔘"}}
 			{{end}}
 		{{end}}
+		{{deleteAllMessageReactions nil $.Message.ID $denyEmoji $acceptEmoji $modmenuEmoji}}
 	{{end}}
 {{else if not $mod}}
 	{{deleteMessageReaction nil .Message.ID .User.ID .Reaction.Emoji.Name}}
