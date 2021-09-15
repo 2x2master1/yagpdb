@@ -1,0 +1,33 @@
+{{/*
+	This is the supportive reaction listener for the suggestion command by 2x2Master.
+
+	Trigger type: Regex
+	Trigger: \A(?:\-|<@!?204255221017214977>)\s*s(?:comment|reason)(?: +|\z)
+	Errors as Custom Command Outputs: off
+	Usage:
+		-scomment/-sreason <message-ID in suggestions channel> <comment message>
+	
+	Comments will be removed once the suggestion is approved/denied. If you want to add a approval/denial reason, please use this command AFTER the reaction.
+
+	Credits: 2x2Master1 <https://github.com/2x2master1>
+	Feel free to ping me in YAGPDB support or DM me if you have any questions or problems!
+*/}}
+
+{{$args := parseArgs 2 (print "Error! Correct usage is: `" .Cmd " <message-ID> <comment/reason>`")
+	(carg "int" "message-ID")
+	(carg "string" "comment/reason")
+}}
+{{$messageid := (index .CmdArgs 0)|toInt}}
+{{$comment := joinStr " " (slice .CmdArgs 1)}}
+{{$message := getMessage $channelid $messageid}}
+{{with (index $message.Embeds 0)}}
+	{{if eq .Color 0x00bbff}}
+		{{editMessage $channelid $messageid (complexMessageEdit "content" $message.Content "embed" (cembed "description" .Description "color" .Color "image" .Image "footer" (sdict "text" (print "Comment by staff: " ($args.Get 1)))))}}
+	{{else if eq .Color 0x00ff00}}
+		{{editMessage $channelid $messageid (complexMessageEdit "content" $message.Content "embed" (cembed "description" .Description "color" .Color "image" .Image "footer" (sdict "text" (print "Approval reason: " ($args.Get 1)))))}}
+	{{else if eq .Color 0xff0000}}
+		{{editMessage $channelid $messageid (complexMessageEdit "content" $message.Content "embed" (cembed "description" .Description "color" .Color "image" .Image "footer" (sdict "text" (print "Denial reason: " ($args.Get 1)))))}}
+	{{end}}
+{{end}}
+{{addReactions "👍"}}
+{{deleteTrigger 5}}
