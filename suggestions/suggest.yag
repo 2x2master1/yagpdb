@@ -18,19 +18,35 @@
 {{$upvoteEmoji := "🟢"}}
 {{$downvoteEmoji := "🔴"}}
 {{$modmenuEmoji := "🔘"}}
-{{/* The variables above are the emojis used for the reactions. */}}
+{{/* The variables above are the emojis used for the reactions. IMPORTANT: Currently, only unicode/default emojis work. */}}
 {{/* Configuration area ends */}}
 
 {{if .CmdArgs}}
     {{$m := false}}
     {{$image := false}}
+    {{$skip := false}}
+    {{$suggestion := ""}}
     {{if .Message.Attachments}}
         {{$image = (index .Message.Attachments 0).ProxyURL}}
+        {{$suggestion = .StrippedMsg}}
+    {{else if (in (.StrippedMsg|lower) "-img")}}
+        {{range (split .StrippedMsg " ")}}
+            {{if eq (.|lower) "-img"}}
+                {{$skip = true}}
+            {{else if $skip}}
+                {{$image = .}}
+                {{$skip = false}}
+            {{else}}
+                {{$suggestion = print $suggestion " " .}}
+            {{end}}
+        {{end}}
+    {{else}}
+        {{$suggestion = .StrippedMsg}}
     {{end}}
     {{if not $image}}
-        {{$m = sendMessageRetID $suggestionChannel (complexMessage "content" (print "**Suggestion by " .User.Mention "**") "embed" (cembed "description" (print (reReplace `(.*)\n{2,}(.*)` .StrippedMsg "$1\n$2") "\n\nUpvotes: 0 (0%)\nDownvotes: 0 (0%)") "color" 0x00bbff))}} 
+        {{$m = sendMessageRetID $suggestionChannel (complexMessage "content" (print "**Suggestion by " .User.Mention "**") "embed" (cembed "description" (print (reReplace `(.*)\n{2,}(.*)` $suggestion "$1\n$2") "\n\nUpvotes: 0 (0%)\nDownvotes: 0 (0%)") "color" 0x00bbff))}} 
     {{else}}
-        {{$m = sendMessageRetID $suggestionChannel (complexMessage "content" (print "**Suggestion by " .User.Mention "**") "embed" (cembed "description" (print (reReplace `(.*)\n{2,}(.*)` .StrippedMsg "$1\n$2") "\n\nUpvotes: 0 (0%)\nDownvotes: 0 (0%)") "image" (sdict "url" $image) "color" 0x00bbff))}}
+        {{$m = sendMessageRetID $suggestionChannel (complexMessage "content" (print "**Suggestion by " .User.Mention "**") "embed" (cembed "description" (print (reReplace `(.*)\n{2,}(.*)` $suggestion "$1\n$2") "\n\nUpvotes: 0 (0%)\nDownvotes: 0 (0%)") "image" (sdict "url" $image) "color" 0x00bbff))}}
     {{end}}
     {{addMessageReactions $suggestionChannel $m $upvoteEmoji $downvoteEmoji $modmenuEmoji}}
     {{addReactions "👍"}}
