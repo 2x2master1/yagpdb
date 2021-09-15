@@ -20,7 +20,7 @@
 {{$modmenuEmoji := "🔘"}}
 {{$acceptEmoji := "✅"}}
 {{$denyEmoji := "❌"}}
-{{/* The variables above are the emojis used for the reaction. Make sure the first three are the same as in the other file. */}}
+{{/* The variables above are the emojis used for the reaction. Make sure the first three are the same as in the other file. IMPORTANT: Currently, only unicode/default emojis work. */}}
 {{/* Configuration area ends, do not edit below */}}
 
 {{$mod := in (split (index (split (exec "viewperms") "\n") 2) ", ") $modPerms}}
@@ -54,15 +54,9 @@
 		{{$down = 0}}
 	{{end}}
 	{{with (index .Message.Embeds 0)}}
-		{{$edNew := print (index (split .Description "\n\n") 0) "\n\nUpvotes: " $c1 " (" $up "%)\nDownvotes: " $c2 " (" $down "%)"}}
-		{{if and .Image (not .Title)}}
-			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "description" $edNew "image" .Image "color" .Color))}}
-		{{else if not .Title}}
-			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "description" $edNew "color" .Color))}}
-		{{else if .Image}}
-			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" .Title "description" $edNew "image" .Image "color" .Color))}}
-		{{else}}
-			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" .Title "description" $edNew "color" .Color))}}
+		{{if eq .Color 0x00bbff}}
+			{{$edNew := print (index (split .Description "\n\n") 0) "\n\nUpvotes: " $c1 " (" $up "%)\nDownvotes: " $c2 " (" $down "%)"}}
+			{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" .Title "description" $edNew "image" .Image "color" .Color "footer" .Footer))}}
 		{{end}}
 	{{end}}
 {{else if eq .Reaction.Emoji.Name $modmenuEmoji}}
@@ -82,20 +76,15 @@
 	{{with (index .Message.Embeds 0)}}
 		{{if .Title}}
 			{{deleteMessageReaction nil $.Message.ID $.User.ID $.Reaction.Emoji.Name}}
-		{{else if .Image}}
-			{{if eq $.Reaction.Emoji.Name $acceptEmoji}}
-				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been accepted by " $.User.String) "description" .Description "image" .Image "color" 0x00ff00))}}
-			{{else}}
-				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been denied by " $.User.String) "description" .Description "image" .Image "color" 0xff0000))}}
-			{{end}}
 		{{else}}
 			{{if eq $.Reaction.Emoji.Name $acceptEmoji}}
-				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been accepted by " $.User.String) "description" .Description "color" 0x00ff00))}}
+				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been accepted by " $.User.String) "description" .Description "image" .Image "color" 0x00ff00))}}
+				{{deleteAllMessageReactions nil $.ReactionMessage.ID}}
 			{{else}}
-				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been denied by " $.User.String) "description" .Description "color" 0xff0000))}}
+				{{editMessage nil $.ReactionMessage.ID (complexMessageEdit "content" $.ReactionMessage.Content "embed" (cembed "title" (print "This suggestion has been denied by " $.User.String) "description" .Description "image" .Image "color" 0xff0000))}}
+				{{deleteAllMessageReactions nil $.ReactionMessage.ID}}
 			{{end}}
 		{{end}}
-		{{deleteAllMessageReactions nil $.Message.ID $denyEmoji $acceptEmoji $modmenuEmoji}}
 	{{end}}
 {{else if not $mod}}
 	{{deleteMessageReaction nil .Message.ID .User.ID .Reaction.Emoji.Name}}
