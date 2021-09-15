@@ -3,6 +3,8 @@
     	Please make sure to restrict this custom command to the suggestions channel so it doesn't trigger in other channels!
 	Please make sure to disable "Add Reactions" permission for @everyone in the suggestions channel to avoid clutter.
 	
+	The reactions 🟢 and 🔴 are there to upvote/downvote suggestions.
+	
 	If you click the blue reaction (:radio_button:), two reactions ✅ and ❌ will show. These are there to deny/accept suggestions.
 	Only users with the permission specified as $modPerms can use other reactions than 🟢 and 🔴.
 
