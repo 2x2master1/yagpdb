@@ -22,11 +22,11 @@
 {{$message := getMessage $channelid $messageid}}
 {{with (index $message.Embeds 0)}}
 	{{if eq .Color 0x00bbff}}
-		{{editMessage $channelid $messageid (complexMessageEdit "content" $message.Content "embed" (cembed "description" .Description "color" .Color "image" .Image "footer" (sdict "text" (print "Comment by staff: " ($args.Get 1)))))}}
+		{{editMessage $channelid $messageid (complexMessageEdit "content" $message.Content "embed" (cembed "description" .Description "title" .Title "color" .Color "image" .Image "footer" (sdict "text" (print "Comment by staff: " ($args.Get 1)))))}}
 	{{else if eq .Color 0x00ff00}}
-		{{editMessage $channelid $messageid (complexMessageEdit "content" $message.Content "embed" (cembed "description" .Description "color" .Color "image" .Image "footer" (sdict "text" (print "Approval reason: " ($args.Get 1)))))}}
+		{{editMessage $channelid $messageid (complexMessageEdit "content" $message.Content "embed" (cembed "description" .Description "title" .Title "color" .Color "image" .Image "footer" (sdict "text" (print "Approval reason: " ($args.Get 1)))))}}
 	{{else if eq .Color 0xff0000}}
-		{{editMessage $channelid $messageid (complexMessageEdit "content" $message.Content "embed" (cembed "description" .Description "color" .Color "image" .Image "footer" (sdict "text" (print "Denial reason: " ($args.Get 1)))))}}
+		{{editMessage $channelid $messageid (complexMessageEdit "content" $message.Content "embed" (cembed "description" .Description "title" .Title "color" .Color "image" .Image "footer" (sdict "text" (print "Denial reason: " ($args.Get 1)))))}}
 	{{end}}
 {{end}}
 {{addReactions "👍"}}
