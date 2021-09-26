@@ -13,16 +13,20 @@
 	-nonick to keep your current nickname
 	-dnd to add a note that you don't want to be pinged at all
 	
+	Configuration area:
+	$editNick - Defines whether your nickname should be changed on going AFK.
+	$deleteMessages - Deletes responses to this custom command after 10 seconds.
+	
 	Requires: 1 free database slot per user that wants to set an AFK status.
 	
 	Credits: 2x2Master1 <https://github.com/2x2master1>
 	Feel free to ping me in YAGPDB support or DM me if you have any questions or problems!
 */}}
 
-{{/* Config */}}
+{{/* Configuration area starts */}}
 {{$editNick := true}}
 {{$deleteMessages := false}}
-{{/* /Config */}}
+{{/* Configuration area starts */}}
 
 {{if and (not .ExecData) .Message.Content}}
 	{{$yagmember := getMember 204255221017214977}}
