@@ -8,6 +8,7 @@ This repository includes my public Custom Commands.
   
   ## General commands that can be useful for managing your server.
   * [Transfer roles](https://github.com/2x2master1/yagpdb/blob/main/utility/TransferRoles.yag)
+  * [AFK system](https://github.com/2x2master1/yagpdb/blob/main/utility/afk.yag)
  </details>
  
  <details>
