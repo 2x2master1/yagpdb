@@ -1,0 +1,125 @@
+{{/*
+	AFK System that includes sending a message when someone AFK is pinged, changing the nickname of users with an AFK status, temporary AFK statusses and removing AFK status when the user talks.
+
+	Trigger type: Regex
+	Trigger: `\A`
+	Errors as Custom Command Outputs: off
+	
+	Usage:
+	-afk <afk message>
+
+	FLAGS:
+	-d DurationHere to set a duration (Example: -d 1h30m)
+	-nonick to keep your current nickname
+	-dnd to add a note that you don't want to be pinged at all
+	
+	Requires: 1 free database slot per user that wants to set an AFK status.
+	
+	Credits: 2x2Master1 <https://github.com/2x2master1>
+	Feel free to ping me in YAGPDB support or DM me if you have any questions or problems!
+*/}}
+
+{{/* Config */}}
+{{$editNick := true}}
+{{$deleteMessages := false}}
+{{/* /Config */}}
+
+{{if and (not .ExecData) .Message.Content}}
+	{{$yagmember := getMember 204255221017214977}}
+	{{$userPosition := 0}}{{$yagPosition := 0}}
+	{{if .Member.Roles}}
+		{{$userPosition = (.Guild.GetRole (index .Member.Roles 0)).Position}}
+	{{end}}
+	{{if $yagmember.Roles}}
+		{{$yagPosition = (.Guild.GetRole (index $yagmember.Roles 0)).Position}}
+	{{end}}
+	{{$db := (dbGet .User.ID "afk").Value}}
+	{{$dnd := false}}
+	{{if inFold .CmdArgs "-dnd"}}
+		{{$dnd = "\n**Please refrain from pinging them!**"}}
+	{{else}}
+		{{$dnd = ""}}
+	{{end}}
+	{{if inFold .CmdArgs "-nonick"}}
+		{{$editNick = false}}
+	{{end}}
+	{{if eq (lower (index .Args 0)) "-afk"}}
+		{{$nick := or .Member.Nick .User.Username}}
+		{{if and (not (ne (index (split $nick " ") 0) "[AFK]")) $editNick}}
+			{{$nick = (reReplace `\[AFK\] ` $nick "")}}
+		{{end}}
+		{{if and (ne (index (split $nick " ") 0) "[AFK]") (gt $yagPosition $userPosition) (ne .Guild.OwnerID .User.ID) ($editNick)}}
+			{{editNickname (print "[AFK] " $nick)}}
+		{{end}}
+		{{if not $editNick}}
+			{{$nick = ""}}
+		{{end}}
+		{{$r := ""}}
+		{{$time := false}}
+		{{$skip := true}}
+		{{range $i, $v := .Args}}
+			{{- if and (eq (lower $v) "-d") (gt (len $.Args) (add $i 1)) (not $skip) -}}
+				{{- $time = toDuration (index $.Args (add $i 1)) -}}
+				{{- $skip = true -}}
+			{{- else if or (eq (lower $v) "-nonick") (eq (lower $v) "-dnd") -}}
+				{{- $skip = false -}}
+			{{- else if not $skip -}}
+				{{- $r = joinStr " " $r $v -}}
+			{{- else -}}
+				{{- $skip = false -}}
+			{{- end -}}
+		{{end}}
+		{{if not $r}}
+			{{$r = "No reason specified."}}
+		{{end}}
+		{{if $time}}
+			{{$time = $time.Seconds}}
+			{{execCC .CCID nil (toInt $time) .User.ID}}
+		{{end}}
+		{{$id1 := sendMessageRetID nil (print .User.Mention ", you are now AFK: `" $r "`")}}
+		{{if $deleteMessages}}
+			{{deleteMessage nil $id1 10}}
+			{{deleteTrigger 10}}
+		{{end}}
+		{{if not $time}}
+			{{dbSet .User.ID "afk" (sdict "name" $nick "r" $r "dnd" $dnd "time" currentTime)}}
+		{{else}}
+			{{dbSetExpire .User.ID "afk" (sdict "name" $nick "r" $r "dnd" $dnd "time" currentTime) (toInt $time)}}
+		{{end}}
+	{{else if $db}}
+		{{if and (gt $yagPosition $userPosition) (ne .Guild.OwnerID .User.ID) ($editNick) (dbGet .User.ID "afk").Value.name}}
+			{{editNickname $db.name}}
+		{{end}}
+		{{$id2 := sendMessageRetID nil (print .User.Mention ", you are no longer AFK.")}}
+		{{if $deleteMessages}}
+			{{deleteMessage nil $id2 10}}
+		{{end}}
+		{{dbDel .User.ID "afk"}}
+	{{else if .Message.Mentions}}   
+		{{range .Message.Mentions}}
+			{{- $db = (dbGet .ID "afk").Value -}}
+			{{- if $db -}}
+				{{- $id3 := sendMessage nil (print $.User.Mention ", " (userArg .ID).String " is currently AFK: `" $db.r "` - " (humanizeDurationSeconds (currentTime.Sub $db.time)) " ago" $db.dnd) -}}
+				{{- if $deleteMessages -}}
+					{{- deleteMessage nil $id3 10 -}}
+				{{- end -}}
+			{{- end -}}
+		{{end}}
+	{{end}}
+{{else}}
+	{{$userPosition := 0}}{{$yagPosition := 0}}
+	{{$yagMember := getMember 204255221017214977}}
+	{{range .Guild.Roles}}
+		{{- if and (in $.Member.Roles .ID) (gt .Position $userPosition)}}
+			{{$userPosition = .Position}}
+		{{end}}
+		{{- if and (in ($yagMember).Roles .ID) (gt .Position $yagPosition)}}
+			{{$yagPosition = .Position}}
+		{{end}}
+	{{end}}
+	{{$d := (dbGet .ExecData "afk").Value.name}}
+	{{if and $d (gt $yagPosition $userPosition) (ne .Guild.OwnerID .User.ID) ($editNick)}}
+		{{editNickname $d}}
+	{{end}}
+	{{dbDel .User.ID "afk"}}
+{{end}}
