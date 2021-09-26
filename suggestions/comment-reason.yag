@@ -13,6 +13,10 @@
 	Feel free to ping me in YAGPDB support or DM me if you have any questions or problems!
 */}}
 
+{{/* Configuration area starts */}}
+{{$channelid := 0}}{{/* Put the ID of your suggestions channel here */}}
+{{/* Configuration area ends */}}
+
 {{$args := parseArgs 2 (print "Error! Correct usage is: `" .Cmd " <message-ID> <comment/reason>`")
 	(carg "int" "message-ID")
 	(carg "string" "comment/reason")
