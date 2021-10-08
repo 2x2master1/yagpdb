@@ -50,9 +50,9 @@
 				{{(execAdmin "cl" (sub $num 400) $user "-minage 25s" "-nopin")}}
 			{{end}}
 			{{if eq (toString $user) "0"}}
-			{{editMessage nil $x (print "<:check:839433758046158888> **" $num "** Messages have been deleted.")}}
+				{{editMessage nil $x (print "<:check:839433758046158888> **" $num "** Messages have been deleted.")}}
 			{{else}}
-			{{editMessage nil $x (print "<:check:839433758046158888> **" $num "** Messages from " (userArg $user).String " have been deleted.")}}
+				{{editMessage nil $x (print "<:check:839433758046158888> **" $num "** Messages from " (userArg $user).String " have been deleted.")}}
 			{{end}}
 		{{else}}
 			{{editMessage nil $x "<:cross:839433835841585184> Number of messages must be between 1 and 500."}}
